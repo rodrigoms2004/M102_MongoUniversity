@@ -1,0 +1,137 @@
+Chapter 0: Introduction and Aggregation Concepts
+Introduction to the Aggregation Framework
+
+
+#################################################################
+https://cloud.mongodb.com/v2/59b02b133b34b96eaaa3379a#clusters
+
+mongo "mongodb://cluster0-shard-00-00-jxeqq.mongodb.net:27017,cluster0-shard-00-01-jxeqq.mongodb.net:27017,cluster0-shard-00-02-jxeqq.mongodb.net:27017/aggregations?replicaSet=Cluster0-shard-0" --authenticationDatabase admin --ssl -u m121 -p aggregations --norc
+
+Cluster0-shard-0:PRIMARY> show collections
+air_airlines
+air_alliances
+air_routes
+bronze_banking
+customers
+employees
+exoplanets
+gold_banking
+icecream_data
+movies
+nycFacilities
+silver_banking
+solarSystem
+stocks
+system.views
+
+#################################################################
+Pipelines
+
+    Stage1      Stage2      Stage3
+    $match      $project    $group
+--->    --->    --->    --->    --->
+
+Pipelines are Composition of stages
+
+Stages are Configurable for transformation, could be arranged in multiple ways
+
+Documents flow like an assembly line
+
+#################################################################
+Aggregation Structure and Syntax
+
+https://docs.mongodb.com/manual/meta/aggregation-quick-reference/
+
+
+db.userColl.aggregate( [ { stage1 }, { stage2 }, { ...stageN } ], { options } )
+
+
+#################################################################
+
+
+db.solarSystem.aggregate([{
+    $match: {
+        atmosphericComposition: { $in: [/O2/] },
+        meanTemperature: { $gte: -40, $lte: 40 }
+    },
+}, {
+    $project: {
+        _id: 0,
+        name: 1,
+        hasMoons: { $gt: ["$numberOfMoons", 0] } }
+}], { allowDiskUse: true })
+
+
+#################################################################
+
+ db.solarSystem.find({name: "Earth"}).pretty()
+{
+        "_id" : ObjectId("59a06674c8df9f3cd2ee7d54"),
+        "name" : "Earth",
+        "type" : "Terrestrial planet",
+        "orderFromSun" : 3,
+        "radius" : {
+                "value" : 6378.137,
+                "units" : "km"
+        },
+        "mass" : {
+                "value" : 5.9723e+24,
+                "units" : "kg"
+        },
+        "sma" : {
+                "value" : 149600000,
+                "units" : "km"
+        },
+        "orbitalPeriod" : {
+                "value" : 1,
+                "units" : "years"
+        },
+        "eccentricity" : 0.0167,
+        "meanOrbitalVelocity" : {
+                "value" : 29.78,
+                "units" : "km/sec"
+        },
+        "rotationPeriod" : {
+                "value" : 1,
+                "units" : "days"
+        },
+        "inclinationOfAxis" : {
+                "value" : 23.45,
+                "units" : "degrees"
+        },
+        "meanTemperature" : 15,
+        "gravity" : {
+                "value" : 9.8,
+                "units" : "m/s^2"
+        },
+        "escapeVelocity" : {
+                "value" : 11.18,
+                "units" : "km/sec"
+        },
+        "meanDensity" : 5.52,
+        "atmosphericComposition" : "N2+O2",
+        "numberOfMoons" : 1,
+        "hasRings" : false,
+        "hasMagneticField" : true
+}
+
+#################################################################
+
+Field Path:         "$fieldName"    ("$numberOfMoons")
+System Variable:    "$$UPPERCASE"   ("$$CURRENT")
+User Variable:      "$$foo"
+
+#################################################################
+
+Aggregation Structure and Syntax Rules
+
+- Pipelines are always an array of one or more stages
+- Stages are composed of one or more aggregation operators or expressions
+    - Expressions may take a single argument or an array of arguments. This is expression dependant
+
+#################################################################
+
+- Some expressions can only be used in certian stages.
+This is correct. For example, accumulator expressions can only be used within the $group stage, 
+with select accumulator expressions available in the $project stage. 
+You'll learn about these stages in depth in the course!

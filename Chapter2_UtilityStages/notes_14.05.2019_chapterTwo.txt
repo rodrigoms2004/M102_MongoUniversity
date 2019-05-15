@@ -1,0 +1,95 @@
+Chapter 2: Basic Aggregation - Utility Stages
+$addFields, $replaceRoot, $geoNear, $sample, and cursor-like stages
+
+#################################################################
+$addFields stage add fields to a document
+
+
+https://docs.mongodb.com/manual/reference/operator/aggregation/addFields/
+
+
+
+#################################################################
+$geoNear
+
+https://docs.mongodb.com/manual/reference/operator/aggregation/geoNear/
+
+
+Remember:
+
+- The collection can have one and only one 2dsphere index
+- If using 2dsphere, the distance is returned in meters. If using legacy coordinates, the distance is returned in radians
+- $geoNear must be the first stage in an aggregation pipeline
+
+#################################################################
+Cursor-like stages
+
+# must specify the field (name: 1) to sort in order, otherwise it will sort by insertion timestamp
+db.solarSystem.find({}, {"_id": 0, "name": 1, "numberOfMoons": 1}).skip(5).pretty();
+
+$limit: { integer }
+$skip: { integer }
+$count: { name we want the count called }
+$sort: { field we want to sort on: integer, direction to sort }
+
+
+Sorting operations are limited to 100MB as default, to allow more, is necessary to allow disk use
+// setting ``allowDiskUse`` option
+db.solarSystem.aggregate([{
+  "$project": {
+    "_id": 0,
+    "name": 1,
+    "hasMagneticField": 1,
+    "numberOfMoons": 1
+  }
+}, {
+  "$sort": { "hasMagneticField": -1, "numberOfMoons": -1 }
+}], { "allowDiskUse": true }).pretty();
+
+#################################################################
+Summary
+
+- $sort, $skip, and $count are functionally equivalent to the similarly named cursor methods
+- $sort can take advantage of indexes if used early within a pipeline
+- By default, $sort will only use up to 100 megabytes of RAM. Settings allowDiskUse: true
+will allow for larger sorts
+
+
+
+#################################################################
+$sample stage
+
+
+https://docs.mongodb.com/manual/reference/operator/aggregation/sample/
+
+
+
+// sampling 200 documents of collection ``nycFacilities``
+db.nycFacilities.aggregate([{"$sample": { "size": 200 }}]).pretty();
+
+#################################################################
+First Method
+
+{ $sample: { size: < N, <how many documents> }}
+
+WHEN:
+    N <= 5% of number of documents in source collection AND
+    Source collection has >= 100 documents AND
+    $sample is the first stage
+
+The cursos will select the specific number of documents to be passed on
+
+#################################################################
+Second Method
+
+{ $sample: { size: < N, <how many documents> }}
+
+WHEN:
+    All other conditions
+
+
+In-memory random sort and select
+
+
+
+#################################################################

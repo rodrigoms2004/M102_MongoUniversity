@@ -1,0 +1,72 @@
+Problem:
+
+Our first movie night was a success. Unfortunately, our ISP called to let us know we're close to our bandwidth quota, 
+but we need another movie recommendation!
+
+Using the same $match stage from the previous lab, add a $project stage 
+to only display the the title and film rating (title and rated fields).
+
+Assign the results to a variable called pipeline.
+
+var pipeline = [{ $match: {. . .} }, { $project: { . . . } }]
+
+Load validateLab2.js which was included in the same handout as validateLab1.js and execute validateLab2(pipeline)?
+
+load('./validateLab2.js')
+
+validateLab2(pipeline)
+
+#################################################################
+
+db.movies.aggregate([{
+    $match: {
+        "imdb.rating": {$gte: 7},
+        genres: { $nin: ["Crime", "Horror"] } ,
+        rated: { $in: ["PG", "G"] },
+        languages: { $all: ["English", "Japanese" ] }   
+    }
+}, {
+    $project: {
+        _id: 0,
+        title: 1,
+        rated: 1
+    }
+}])
+
+
+
+#################################################################
+
+var pipeline = [{
+    $match: {
+        "imdb.rating": {$gte: 7},
+        genres: { $nin: ["Crime", "Horror"] } ,
+        rated: { $in: ["PG", "G"] },
+        languages: { $all: ["English", "Japanese" ] }   
+    }
+}, {
+    $project: {
+        _id: 0,
+        title: 1,
+        rated: 1
+    }
+}]
+
+#################################################################
+
+MongoDB Enterprise Cluster0-shard-0:PRIMARY> cd("Chapter1_BasicAggregation")
+
+MongoDB Enterprise Cluster0-shard-0:PRIMARY> ls()
+[
+        "./validateLab2.js",
+        "./validateLab1.js",
+        "./notes_14.05.2019_chapterOne.txt",
+        "./chapter1.zip",
+        "./project_stage.js",
+        "./lab1_match.txt",
+        "./lab2_project.txt"
+]
+MongoDB Enterprise Cluster0-shard-0:PRIMARY> load('./validateLab2.js')
+true
+MongoDB Enterprise Cluster0-shard-0:PRIMARY> validateLab2(pipeline)
+Answer is 15

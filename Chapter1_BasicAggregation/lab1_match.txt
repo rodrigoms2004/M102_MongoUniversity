@@ -1,0 +1,160 @@
+# Connect to Atlas
+mongo "mongodb://cluster0-shard-00-00-jxeqq.mongodb.net:27017,cluster0-shard-00-01-jxeqq.mongodb.net:27017,cluster0-shard-00-02-jxeqq.mongodb.net:27017/aggregations?replicaSet=Cluster0-shard-0" --authenticationDatabase admin --ssl -u m121 -p aggregations --norc
+
+After connecting to the cluster, ensure you can see the movies collection by typing 
+show collections and then run the command db.movies.findOne(). Take a moment to familiarize yourself with the schema.
+
+Once you have familiarized yourself with the schema, continue to the next tab.
+
+
+#################################################################
+MongoDB Enterprise Cluster0-shard-0:PRIMARY> show collections
+air_airlines
+air_alliances
+air_routes
+bronze_banking
+child_reference
+customers
+employees
+exoplanets
+gold_banking
+icecream_data
+movies
+nycFacilities
+parent_reference
+silver_banking
+solarSystem
+stocks
+system.views
+
+
+#################################################################
+
+MongoDB Enterprise Cluster0-shard-0:PRIMARY> db.movies.findOne()
+{
+        "_id" : ObjectId("573a1390f29313caabcd421c"),
+        "title" : "A Turn of the Century Illusionist",
+        "year" : 1899,
+        "runtime" : 1,
+        "cast" : [
+                "Georges M�li�s"
+        ],
+        "lastupdated" : "2015-08-29 00:21:21.547000000",
+        "type" : "movie",
+        "directors" : [
+                "Georges M�li�s"
+        ],
+        "imdb" : {
+                "rating" : 6.6,
+                "votes" : 580,
+                "id" : 246
+        },
+        "countries" : [
+                "France"
+        ],
+        "genres" : [
+                "Short"
+        ],
+        "tomatoes" : {
+                "viewer" : {
+                        "rating" : 3.8,
+                        "numReviews" : 32
+                },
+                "lastUpdated" : ISODate("2015-08-20T18:46:44Z")
+        }
+}
+
+#################################################################
+
+Problem:
+
+Help MongoDB pick a movie our next movie night! Based on employee polling, 
+we've decided that potential movies must meet the following criteria.
+
+    imdb.rating is at least 7
+    genres does not contain "Crime" or "Horror"
+    rated is either "PG" or "G"
+    languages contains "English" and "Japanese"
+
+
+var pipeline = [ { $match: { ... } } ]
+
+As a hint, your aggregation should return 23 documents. You can verify this by typing db.movies.aggregate(pipeline).itcount()
+
+Load validateLab1.js into mongo shell
+
+load('validateLab1.js')
+
+validateLab1(pipeline)
+
+#################################################################
+
+https://docs.mongodb.com/manual/reference/operator/query/elemMatch/
+https://docs.mongodb.com/manual/reference/operator/query/nin/
+
+
+db.movies.aggregate([{
+    $match: {
+        "imdb.rating": {$gte: 7},
+        genres: { $nin: ["Crime", "Horror"] } ,
+        rated: { $in: ["PG", "G"] },
+        languages: { $all: ["English", "Japanese" ] }   
+    }
+}, {
+    $project: {
+        _id: 0,
+        imdb: 1,
+        genres: 1,
+        rated: 1,
+        languages: 1
+    }
+}, { $count: "movies" } ])
+
+{ "movies" : 23 }
+
+#################################################################
+
+var pipeline = [{
+    $match: {
+        "imdb.rating": {$gte: 7},
+        genres: { $nin: ["Crime", "Horror"] } ,
+        rated: { $in: ["PG", "G"] },
+        languages: { $all: ["English", "Japanese" ] }   
+    }
+}, {
+    $project: {
+        _id: 0,
+        imdb: 1,
+        genres: 1,
+        rated: 1,
+        languages: 1
+    }
+}]
+
+
+db.movies.aggregate(pipeline).itcount()
+23
+
+#################################################################
+
+// load('validateLab1.js') use function inside validateLab1.js
+
+validateLab1(pipeline)
+
+
+#################################################################
+Answer is 15
+
+#################################################################
+
+var pipeline = [
+    {
+      $match: {
+        "imdb.rating": { $gte: 7 },
+        genres: { $nin: [ "Crime", "Horror" ] } ,
+        rated: { $in: ["PG", "G" ] },
+        languages: { $all: [ "English", "Japanese" ] }
+      }
+    }
+  ]
+

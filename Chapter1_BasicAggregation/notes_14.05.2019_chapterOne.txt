@@ -1,0 +1,173 @@
+Chapter 1: Basic Aggregation - $match and $project
+Introducing the $match and $project stages and Aggregation expressions
+
+#################################################################
+
+https://docs.mongodb.com/manual/reference/operator/aggregation/match/
+
+db.solarSystem.aggregate([{
+    $match: { }
+}])
+
+$match uses standard MongoDB query operators 
+
+If $match is the first stage, it could take advantage of indexes
+
+#################################################################
+Bring all elements that are not Stars
+
+db.solarSystem.aggregate([{
+    $match: {
+        type: { $ne: "Star" }     
+    }
+}]).pretty()
+
+# count it...
+db.solarSystem.count({ type: { $ne: "Star" } })
+
+8
+
+#################################################################
+
+# now using aggregation
+db.solarSystem.aggregate([{
+    $match: {
+        type: { $ne: "Star" }     
+    }}, { $count: "planets" }])
+
+{ "planets" : 8 }
+
+#################################################################
+
+$match does NOT ALLOW for projection
+
+#################################################################
+KEY THINGS TO REMEMBER
+
+- A $match stage may contain a $text query operator, but it must be the first stage in a pipeline
+- $match should come early in an aggregation pipeline
+- You cannot use $where with $match
+- $match uses the same query sintax as find
+
+
+
+#################################################################
+#################################################################
+$PROJECT
+
+
+https://docs.mongodb.com/manual/reference/operator/aggregation/project/
+
+
+db.solarSystem.aggregate([{ $project: {...} }])
+
+MongoDB Enterprise Cluster0-shard-0:PRIMARY> db.solarSystem.aggregate([{ $project: { _id: 1, name: 1 } }])
+{ "_id" : ObjectId("59a06674c8df9f3cd2ee7d58"), "name" : "Uranus" }
+{ "_id" : ObjectId("59a06674c8df9f3cd2ee7d52"), "name" : "Mercury" }
+{ "_id" : ObjectId("59a06674c8df9f3cd2ee7d54"), "name" : "Earth" }
+{ "_id" : ObjectId("59a06674c8df9f3cd2ee7d56"), "name" : "Jupiter" }
+{ "_id" : ObjectId("59a06674c8df9f3cd2ee7d53"), "name" : "Venus" }
+{ "_id" : ObjectId("59a06674c8df9f3cd2ee7d55"), "name" : "Mars" }
+{ "_id" : ObjectId("59a06674c8df9f3cd2ee7d51"), "name" : "Sun" }
+{ "_id" : ObjectId("59a06674c8df9f3cd2ee7d57"), "name" : "Saturn" }
+{ "_id" : ObjectId("59a06674c8df9f3cd2ee7d59"), "name" : "Neptune" }
+
+MongoDB Enterprise Cluster0-shard-0:PRIMARY> db.solarSystem.aggregate([{ $project: { _id: 0, name: 1 } }])
+{ "name" : "Uranus" }
+{ "name" : "Mercury" }
+{ "name" : "Earth" }
+{ "name" : "Jupiter" }
+{ "name" : "Venus" }
+{ "name" : "Mars" }
+{ "name" : "Sun" }
+{ "name" : "Saturn" }
+{ "name" : "Neptune" }
+
+MongoDB Enterprise Cluster0-shard-0:PRIMARY> db.solarSystem.aggregate([{ $project: { name: 1, gravity: 1 } }])
+{ "_id" : ObjectId("59a06674c8df9f3cd2ee7d58"), "name" : "Uranus", "gravity" : { "value" : 8.87, "units" : "m/s^2" } }
+{ "_id" : ObjectId("59a06674c8df9f3cd2ee7d52"), "name" : "Mercury", "gravity" : { "value" : 3.24, "units" : "m/s^2" } }
+{ "_id" : ObjectId("59a06674c8df9f3cd2ee7d54"), "name" : "Earth", "gravity" : { "value" : 9.8, "units" : "m/s^2" } }
+{ "_id" : ObjectId("59a06674c8df9f3cd2ee7d56"), "name" : "Jupiter", "gravity" : { "value" : 24.79, "units" : "m/s^2" } }
+{ "_id" : ObjectId("59a06674c8df9f3cd2ee7d53"), "name" : "Venus", "gravity" : { "value" : 8.87, "units" : "m/s^2" } }
+{ "_id" : ObjectId("59a06674c8df9f3cd2ee7d55"), "name" : "Mars", "gravity" : { "value" : 3.71, "units" : "m/s^2" } }
+{ "_id" : ObjectId("59a06674c8df9f3cd2ee7d51"), "name" : "Sun", "gravity" : { "value" : 274, "units" : "m/s^2" } }
+{ "_id" : ObjectId("59a06674c8df9f3cd2ee7d57"), "name" : "Saturn", "gravity" : { "value" : 10.44, "units" : "m/s^2" } }
+{ "_id" : ObjectId("59a06674c8df9f3cd2ee7d59"), "name" : "Neptune", "gravity" : { "value" : 11.15, "units" : "m/s^2" } }
+
+
+MongoDB Enterprise Cluster0-shard-0:PRIMARY> db.solarSystem.aggregate([{ $project: { _id: 0, name: 1, "gravity.value": 1 } }])
+{ "name" : "Uranus", "gravity" : { "value" : 8.87 } }
+{ "name" : "Mercury", "gravity" : { "value" : 3.24 } }
+{ "name" : "Earth", "gravity" : { "value" : 9.8 } }
+{ "name" : "Jupiter", "gravity" : { "value" : 24.79 } }
+{ "name" : "Venus", "gravity" : { "value" : 8.87 } }
+{ "name" : "Mars", "gravity" : { "value" : 3.71 } }
+{ "name" : "Sun", "gravity" : { "value" : 274 } }
+{ "name" : "Saturn", "gravity" : { "value" : 10.44 } }
+{ "name" : "Neptune", "gravity" : { "value" : 11.15 } }
+
+MongoDB Enterprise Cluster0-shard-0:PRIMARY> db.solarSystem.aggregate([{ $project: { _id: 0, name: 1, gravity: "$gravity.value" } }])
+{ "name" : "Uranus", "gravity" : 8.87 }
+{ "name" : "Mercury", "gravity" : 3.24 }
+{ "name" : "Earth", "gravity" : 9.8 }
+{ "name" : "Jupiter", "gravity" : 24.79 }
+{ "name" : "Venus", "gravity" : 8.87 }
+{ "name" : "Mars", "gravity" : 3.71 }
+{ "name" : "Sun", "gravity" : 274 }
+{ "name" : "Saturn", "gravity" : 10.44 }
+{ "name" : "Neptune", "gravity" : 11.15 }
+
+
+MongoDB Enterprise Cluster0-shard-0:PRIMARY> db.solarSystem.aggregate([{"$project": { "_id": 0, "name": 1, "surfaceGravity": "$gravity.value" }}])
+{ "name" : "Uranus", "surfaceGravity" : 8.87 }
+{ "name" : "Mercury", "surfaceGravity" : 3.24 }
+{ "name" : "Earth", "surfaceGravity" : 9.8 }
+{ "name" : "Jupiter", "surfaceGravity" : 24.79 }
+{ "name" : "Venus", "surfaceGravity" : 8.87 }
+{ "name" : "Mars", "surfaceGravity" : 3.71 }
+{ "name" : "Sun", "surfaceGravity" : 274 }
+{ "name" : "Saturn", "surfaceGravity" : 10.44 }
+{ "name" : "Neptune", "surfaceGravity" : 11.15 }
+
+#################################################################
+
+{ $multiply: [ gravityRatio, weightOnEarth ]}
+
+db.solarSystem.aggregate([{"$project": { "_id": 0, "name": 1, "myWeight": { "$multiply": [ { "$divide": [ "$gravity.value", 9.8 ] }, 105 ] } }}])
+{ "name" : "Uranus", "myWeight" : 95.03571428571428 }
+{ "name" : "Mercury", "myWeight" : 34.714285714285715 }
+{ "name" : "Earth", "myWeight" : 105 }
+{ "name" : "Jupiter", "myWeight" : 265.60714285714283 }
+{ "name" : "Venus", "myWeight" : 95.03571428571428 }
+{ "name" : "Mars", "myWeight" : 39.75 }
+{ "name" : "Sun", "myWeight" : 2935.714285714286 }
+{ "name" : "Saturn", "myWeight" : 111.85714285714285 }
+{ "name" : "Neptune", "myWeight" : 119.46428571428571 }
+
+#################################################################
+Things to remember
+
+- Once we specify one field to retain, we must specify all fields we want to retain. The _id field is the only exception to this
+- Beyond simply removing and retaining fields, $project lets us add new fields
+- $project can be used as many times as required within an Aggregation pipeline
+- $project can be used to reassign values to existing field names and to derive entirely new fields
+
+
+
+#################################################################
+
+#################################################################
+
+#################################################################
+
+
+#################################################################
+
+
+
+#################################################################
+
+
+
+
+
