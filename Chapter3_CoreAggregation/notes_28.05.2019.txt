@@ -1,0 +1,92 @@
+$group stage
+
+{ $group: { _id: <matching/grouping criteria> }}
+
+
+db.movies.aggregate([{ $group: { _id: "$year" } }])
+
+
+
+https://docs.mongodb.com/manual/reference/operator/aggregation/group/
+
+
+Summary
+
+- _id is where to specify what incoming documents should be grouped on
+- Can use all accumulator expressions within $group
+- $group cab be used multiple within a pipeline
+- it may be necessary to sanitize incoming data
+
+
+################################################################
+$ project
+
+https://docs.mongodb.com/manual/reference/operator/aggregation/#group-accumulator-operators
+
+
+Highlights
+
+- Available Accumulator Expressions
+    $sum, $avg, $max, $min, $stdDevPop, $stdDevSam
+
+- Expressions have no memory between documents
+- May still have to use $reduce or $map for more complex calculations
+
+
+
+################################################################
+$unwind
+
+https://docs.mongodb.com/manual/reference/operator/aggregation/unwind/
+
+Short form
+
+$unwind: <field path>
+
+Long form
+$unwind: {
+    path: <field path>,
+    includeArrayIndex: <string>,
+    preserveNullAndEmptyArrays:<boolean>
+}
+
+Highlights
+- $unwind only works on array values
+- there are two forms for unwind, short form and long form
+- using unwind on large collections with big documents may lead performance issues
+
+################################################################
+$lookup Stage
+
+https://docs.mongodb.com/manual/reference/operator/aggregation/lookup/
+
+$lookup: {
+    from: <collection to join>,
+    localField: <field from the input documents>,
+    foregnField: <field from the documents of the "from" collections>,
+    as: <output array field>
+}
+
+Summary:
+- The from collection cannot be sharded
+- The from collection must be in the same database
+- The values in localField and foreignField are matched on equality
+- as can be any name, but if exists in the working document that field will be overwritten
+
+
+################################################################
+$graphLookup Introduction
+
+$graphLookup: {
+    from:
+    startWith:
+    connectFromField:
+    connectToField:
+    as:
+    maxDepth:
+    depthField:
+    restrictSearchWithMatch:
+}
+
+
+https://docs.mongodb.com/manual/reference/operator/aggregation/graphLookup/
